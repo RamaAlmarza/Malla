@@ -31,14 +31,37 @@ h1 {
 
 #malla-container {
     display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding: 10px;
+    flex-direction: column; /* Apila los años verticalmente */
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px; /* Opcional: limita el ancho máximo */
+}
+
+.year-container {
+    background-color: rgba(255, 255, 255, 0.4);
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.year-header {
+    font-size: 1.8em;
+    color: var(--primary-color);
+    margin: 0 0 15px 0;
+    text-align: center;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+}
+
+.periods-container {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto; /* Permite scroll si los periodos no caben */
     justify-content: flex-start;
 }
 
 .periodo {
-    flex: 0 0 200px; /* Ancho fijo para cada columna de período */
+    flex: 0 0 220px; /* Ancho fijo para cada columna de período */
     padding: 10px;
     background-color: #fdf0d5;
     border-radius: 8px;
@@ -61,11 +84,17 @@ h1 {
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 6px;
-    cursor: pointer;
+    cursor: not-allowed; /* Cursor por defecto: no permitido */
     transition: all 0.3s ease;
-    border: 2px solid var(--secondary-color);
+    border: 2px solid transparent; /* Borde transparente para mantener tamaño */
     font-weight: bold;
     text-align: center;
+    opacity: 0.8;
+}
+
+.materia.available, .materia.completed {
+    cursor: pointer; /* Cambia a puntero si se puede clickear */
+    opacity: 1;
 }
 
 .materia:hover {
@@ -78,7 +107,6 @@ h1 {
     background-color: var(--completed-color);
     color: var(--border-color);
     text-decoration: line-through;
-    opacity: 0.7;
 }
 
 /* Estilo para materia disponible para cursar */
