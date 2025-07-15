@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         periodosPorAno[ano].forEach(periodoData => {
             const periodoDiv = document.createElement('div');
             periodoDiv.classList.add('periodo');
-            periodoDiv.innerHTML = `<h2>Período ${periodoData.periodo}</h2>`;
+            periodoDiv.innerHTML = `<h2> Cuatrimestre ${periodoData.periodo}</h2>`;
 
             periodoData.materias.forEach(materia => {
                 const materiaDiv = document.createElement('div');
