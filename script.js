@@ -4,56 +4,85 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const container = document.getElementById('malla-container');
     const todasLasMaterias = new Map();
+    data.forEach(periodo => periodo.materias.forEach(materia => todasLasMaterias.set(materia.id, materia)));
 
-    data.forEach(periodo => {
-        periodo.materias.forEach(materia => {
-            todasLasMaterias.set(materia.id, materia);
+    // 1. Agrupar periodos por año
+    const periodosPorAno = data.reduce((acc, periodo) => {
+        const ano = periodo.año;
+        if (!acc[ano]) {
+            acc[ano] = [];
+        }
+        acc[ano].push(periodo);
+        return acc;
+    }, {});
+
+    // 2. Crear la estructura de la malla por años
+    Object.keys(periodosPorAno).sort((a,b) => a - b).forEach(ano => {
+        const yearContainer = document.createElement('div');
+        yearContainer.classList.add('year-container');
+        yearContainer.innerHTML = `<h2 class="year-header">Año ${ano}</h2>`;
+
+        const periodsContainer = document.createElement('div');
+        periodsContainer.classList.add('periods-container');
+        
+        periodosPorAno[ano].forEach(periodoData => {
+            const periodoDiv = document.createElement('div');
+            periodoDiv.classList.add('periodo');
+            periodoDiv.innerHTML = `<h2>Período ${periodoData.periodo}</h2>`;
+
+            periodoData.materias.forEach(materia => {
+                const materiaDiv = document.createElement('div');
+                materiaDiv.classList.add('materia');
+                materiaDiv.textContent = materia.nombre;
+                materiaDiv.dataset.id = materia.id;
+                materiaDiv.addEventListener('click', () => toggleCompleted(materia.id));
+                periodoDiv.appendChild(materiaDiv);
+            });
+            periodsContainer.appendChild(periodoDiv);
         });
-    });
-
-    // Crear la estructura de la malla
-    data.forEach(periodoData => {
-        const periodoDiv = document.createElement('div');
-        periodoDiv.classList.add('periodo');
-        periodoDiv.innerHTML = `<h2>Año ${periodoData.año} - Per. ${periodoData.periodo}</h2>`;
-
-        periodoData.materias.forEach(materia => {
-            const materiaDiv = document.createElement('div');
-            materiaDiv.classList.add('materia');
-            materiaDiv.textContent = materia.nombre;
-            materiaDiv.dataset.id = materia.id;
-            materiaDiv.addEventListener('click', () => toggleCompleted(materia.id));
-            periodoDiv.appendChild(materiaDiv);
-        });
-        container.appendChild(periodoDiv);
+        
+        yearContainer.appendChild(periodsContainer);
+        container.appendChild(yearContainer);
     });
 
     function toggleCompleted(id) {
         const materiaDiv = document.querySelector(`[data-id="${id}"]`);
-        materiaDiv.classList.toggle('completed');
-        updateMalla();
+        const isAvailable = materiaDiv.classList.contains('available');
+        const isCompleted = materiaDiv.classList.contains('completed');
+
+        // 3. Permitir el click solo si está disponible o ya completada (para deshacer)
+        if (isAvailable || isCompleted) {
+            materiaDiv.classList.toggle('completed');
+            updateMalla();
+        }
     }
 
     function updateMalla() {
-        const completedIds = new Set();
-        document.querySelectorAll('.materia.completed').forEach(m => {
-            completedIds.add(m.dataset.id);
-        });
+        const completedIds = new Set(
+            Array.from(document.querySelectorAll('.materia.completed')).map(m => m.dataset.id)
+        );
 
         todasLasMaterias.forEach(materia => {
             const materiaDiv = document.querySelector(`[data-id="${materia.id}"]`);
+            
+            // 4. Lógica de disponibilidad corregida
             if (!materiaDiv.classList.contains('completed')) {
                 const requisitos = materia.requisitos || [];
+                // 'every' devuelve true para arrays vacíos, lo cual es perfecto.
                 const allPrereqsMet = requisitos.every(reqId => completedIds.has(reqId));
                 
-                if (requisitos.length > 0 && allPrereqsMet) {
+                if (allPrereqsMet) {
                     materiaDiv.classList.add('available');
                 } else {
                     materiaDiv.classList.remove('available');
                 }
+            } else {
+                // Una materia completada ya no debe estar "disponible"
+                materiaDiv.classList.remove('available');
             }
         });
     }
 
-    updateMalla(); // Estado inicial
+    // Llamada inicial para establecer el estado base
+    updateMalla();
 });
